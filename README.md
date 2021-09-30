@@ -3,8 +3,6 @@
 
 Congratulations! You've made it through another _intense_ module, and now you're ready to show off your newfound Machine Learning skills!
 
-![awesome](https://raw.githubusercontent.com/learn-co-curriculum/dsc-phase-3-project/main/images/smart.gif)
-
 All that remains in Phase 3 is to put your new skills to use with another large project! This project should take 20 to 30 hours to complete.
 
 ## Project Overview
@@ -54,7 +52,7 @@ Sourcing new data is a valuable skill for data scientists, but it requires a gre
 
 Your dataset must be...
 
-1. **Appropriate for classification.** It should have a categorical outcome or the data needed to engineer one.   
+1. **Appropriate for classification.** It should have a categorical outcome or the data needed to engineer one.
 
 2. **Usable to solve a specific business problem.** This solution must rely on your classification model.
 
