@@ -40,7 +40,7 @@ def get_val_metrics(y_train, y_validate, y_train_pred, y_validate_pred):
     return metrics
 
 
-def val_confusion_matrix(estimator, X_train, X_validate, y_train, y_validate):
+def val_confusion_matrix(estimator, X_train, X_validate, y_train, y_validate, *, test=False):
     fig, (ax3, ax4) = plt.subplots(nrows=1, ncols=2, figsize=(10,4))
 
     plot_confusion_matrix(estimator, X_train, y_train, normalize="all", cmap='Blues', ax=ax3)
@@ -49,7 +49,10 @@ def val_confusion_matrix(estimator, X_train, X_validate, y_train, y_validate):
 
     plot_confusion_matrix(estimator, X_validate, y_validate, normalize="all", cmap='Oranges', ax=ax4)
     ax4.grid(False)
-    ax4.set(title='Confusion Matrix (Validation)')
+    if is_test:
+        ax4.set(title='Confusion Matrix (Test)')
+    else:
+        ax4.set(title='Confusion Matrix (Validation)')
 
     return
 
@@ -67,12 +70,16 @@ def val_roc_curve(estimator, X_train, X_validate, y_train, y_validate):
 
 
 
-def validate(estimator, X_train, X_validate, y_train, y_validate):
+def validate(estimator, X_train, X_validate, y_train, y_validate, *, is_test=False):
     estimator.fit(X_train, y_train)
     y_train_pred = estimator.predict(X_train)
     y_validate_pred = estimator.predict(X_validate)
 
     metrics = get_val_metrics(y_train, y_validate, y_train_pred, y_validate_pred)
+    if is_test:
+        metrics['Train'] = metrics['Validate']
+        metrics.pop('Validate')
+
     train_fpr, train_tpr, validate_fpr, validate_tpr, train_auc, validate_auc = val_roc_curve(estimator, X_train, X_validate, y_train, y_validate)
 
     plt.rcParams['axes.labelsize'] = 15
@@ -97,11 +104,17 @@ def validate(estimator, X_train, X_validate, y_train, y_validate):
     ax3 = fig.add_subplot(gs[1, 1])
     plot_confusion_matrix(estimator, X_validate, y_validate, normalize="all", cmap='Oranges', ax=ax3)
     ax3.grid(False)
-    ax3.set(title='Confusion Matrix (Validation)')
+    if is_test:
+        ax3.set(title='Confusion Matrix (Test)')
+    else:
+        ax3.set(title='Confusion Matrix (Validation)')
 
     ax4 = fig.add_subplot(gs[2, :])
     ax4.plot(train_fpr, train_tpr, color="tab:blue", label=f'Training (AUC = {train_auc})')
-    ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Validation (AUC = {validate_auc})')
+    if is_test:
+        ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Test (AUC = {validate_auc})')
+    else:
+        ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Validation (AUC = {validate_auc})')
     ax4.plot([0,1], [0,1], color='red', ls=':')
     ax4.set(
         title='ROC Curve',
@@ -149,3 +162,25 @@ def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
     plt.ylabel("Score")
     plt.xlabel("Decision Threshold")
     plt.legend(loc='best')
+
+
+def plot_label_ratios(X, y, category_name):
+    target_name = y.name
+    sliced_cols = [col for col in X.columns if col.startswith(category_name)]
+    df = pd.concat([X[sliced_cols], y], axis=1)
+    ratios_dict = {}
+    for col_name in sliced_cols:
+        level_name = col_name.split('_')[-1]
+        ratio = df.loc[(df[col_name] == 1) & (df[target_name] == 1)].shape[0] / df.loc[(df[col_name] == 1)].shape[0]
+        ratios_dict[level_name] = ratio
+
+    levels = []
+    ratios = []
+    for level, ratio in sorted(ratios_dict.items(), key=lambda x: x[1]):
+        levels.append(level)
+        ratios.append(ratio)
+
+    fig, ax = plt.subplots(figsize=(7,7))
+    ax.bar(levels, ratios)
+    ax.set(title=f"Positive Label Ratios [{category_name}]", ylim=(0,1))
+    ax.yaxis.set_major_locator(MultipleLocator(base=0.1))
