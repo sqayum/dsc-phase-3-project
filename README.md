@@ -257,7 +257,7 @@ Finally, combining the different models into a single classifier by feeding them
 
 ## Further Information
 
-Review the full analysis in the [ Jupyter Notebook](./cardiovascular-disease-predictor.ipynb) or the view the [Presentation](./Cardiovascular_Disease_Predictor.pdf).
+Review the full analysis in the [ Jupyter Notebook](./predicting-cardiovascular-disease.ipynb) or the view the [Presentation](./Predicting_Cardiovascular_Disease_Presentation.pdf).
 
 *For any additional questions, please contact:*
 
@@ -279,8 +279,8 @@ Review the full analysis in the [ Jupyter Notebook](./cardiovascular-disease-pre
     ├── obesity_index.png
     ├── rfc-bestMaxDepth.png
     └── rfc-bestMinSamplesLeaf.png
-├── Cardiovascular_Disease_Predictor.pdf
-├── cardiovascular-disease-predictor.ipynb
+├── Predicting_Cardiovascular_Disease_Presentation.pdf
+├── predicting-cardiovascular-disease.ipynb
 ├── classifier_utils.py
 └── README.md
 ```
