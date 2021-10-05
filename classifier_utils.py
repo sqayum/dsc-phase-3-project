@@ -40,19 +40,16 @@ def get_val_metrics(y_train, y_validate, y_train_pred, y_validate_pred):
     return metrics
 
 
-def val_confusion_matrix(estimator, X_train, X_validate, y_train, y_validate, *, test=False):
-    fig, (ax3, ax4) = plt.subplots(nrows=1, ncols=2, figsize=(10,4))
+def val_confusion_matrix(estimator, X_train, X_validate, y_train, y_validate):
+    fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10,4))
 
-    plot_confusion_matrix(estimator, X_train, y_train, normalize="all", cmap='Blues', ax=ax3)
-    ax3.grid(False)
-    ax3.set(title='Confusion Matrix (Training)')
+    plot_confusion_matrix(estimator, X_train, y_train, normalize="true", cmap='Blues', ax=ax1)
+    ax1.grid(False)
+    ax1.set(title='Confusion Matrix (Training)')
 
-    plot_confusion_matrix(estimator, X_validate, y_validate, normalize="all", cmap='Oranges', ax=ax4)
-    ax4.grid(False)
-    if is_test:
-        ax4.set(title='Confusion Matrix (Test)')
-    else:
-        ax4.set(title='Confusion Matrix (Validation)')
+    plot_confusion_matrix(estimator, X_validate, y_validate, normalize="true", cmap='Oranges', ax=ax2)
+    ax2.grid(False)
+    ax2.set(title='Confusion Matrix (Validation)')
 
     return
 
@@ -70,15 +67,12 @@ def val_roc_curve(estimator, X_train, X_validate, y_train, y_validate):
 
 
 
-def validate(estimator, X_train, X_validate, y_train, y_validate, *, is_test=False):
+def validate(estimator, X_train, X_validate, y_train, y_validate, *, return_metrics=False):
     estimator.fit(X_train, y_train)
     y_train_pred = estimator.predict(X_train)
     y_validate_pred = estimator.predict(X_validate)
 
     metrics = get_val_metrics(y_train, y_validate, y_train_pred, y_validate_pred)
-    if is_test:
-        metrics['Train'] = metrics['Validate']
-        metrics.pop('Validate')
 
     train_fpr, train_tpr, validate_fpr, validate_tpr, train_auc, validate_auc = val_roc_curve(estimator, X_train, X_validate, y_train, y_validate)
 
@@ -97,24 +91,18 @@ def validate(estimator, X_train, X_validate, y_train, y_validate, *, is_test=Fal
 
 
     ax2 = fig.add_subplot(gs[1, 0])
-    plot_confusion_matrix(estimator, X_train, y_train, normalize="all", cmap='Blues', ax=ax2)
+    plot_confusion_matrix(estimator, X_train, y_train, normalize="true", cmap='Blues', ax=ax2)
     ax2.grid(False)
     ax2.set(title='Confusion Matrix (Training)')
 
     ax3 = fig.add_subplot(gs[1, 1])
-    plot_confusion_matrix(estimator, X_validate, y_validate, normalize="all", cmap='Oranges', ax=ax3)
+    plot_confusion_matrix(estimator, X_validate, y_validate, normalize="true", cmap='Oranges', ax=ax3)
     ax3.grid(False)
-    if is_test:
-        ax3.set(title='Confusion Matrix (Test)')
-    else:
-        ax3.set(title='Confusion Matrix (Validation)')
+    ax3.set(title='Confusion Matrix (Validation)')
 
     ax4 = fig.add_subplot(gs[2, :])
     ax4.plot(train_fpr, train_tpr, color="tab:blue", label=f'Training (AUC = {train_auc})')
-    if is_test:
-        ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Test (AUC = {validate_auc})')
-    else:
-        ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Validation (AUC = {validate_auc})')
+    ax4.plot(validate_fpr, validate_tpr, color="tab:orange", label=f'Validation (AUC = {validate_auc})')
     ax4.plot([0,1], [0,1], color='red', ls=':')
     ax4.set(
         title='ROC Curve',
@@ -122,7 +110,10 @@ def validate(estimator, X_train, X_validate, y_train, y_validate, *, is_test=Fal
         ylabel='True Positive Rate')
     ax4.legend()
 
-    return
+    if return_metrics:
+        return metrics
+    else:
+        return 
 
 
 def plot_validation_curve(estimator, X_train, y_train, *, param_name, param_range, scoring=f2, fit_params=None, n_jobs=-1):
@@ -150,11 +141,7 @@ def plot_validation_curve(estimator, X_train, y_train, *, param_name, param_rang
     plt.show()
 
 def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
-    """
-    Modified from:
-    Hands-On Machine learning with Scikit-Learn
-    and TensorFlow; p.89
-    """
+
     plt.figure(figsize=(8, 8))
     plt.title("Precision and Recall Scores as a function of the decision threshold")
     plt.plot(thresholds, precisions[:-1], "b--", label="Precision")

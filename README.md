@@ -144,7 +144,7 @@ A `LogisticRegression` estimator was fit to the training set and the regularizat
 
 ##### **K-Nearest Neighbors (KNN)**
 
-A `KNeighborsClassifier` estimator was fit to the training set. The number of neighbors (`n_neighbors` parameter) and distance metric (`p`) that minimized training loss was found through a grid search, resulting in the `knn_best` estimator.
+A `KNeighborsClassifier` estimator was fit to the training set. The number of neighbors (`n_neighbors` parameter) and distance metric (`p`) that minimized training loss were found through a grid search, resulting in the `knn_best` estimator.
 
 *The parameter information for `knn_best` is shown below:*
 > `knn_best = KNeighborsClassifier(n_jobs=-1, n_neighbors=21, p=3)`
@@ -166,32 +166,6 @@ A `BaggingClassifier`, with `knn_best` as the base estimator, was fit to the tra
 <br>
 
 ## Results
-
-### *Models*
-
-*The validation metrics for predictions against the test (hold-out) set for each model is shown below:*
-
-#### *`rfc_bestMaxDepth`*
-> `RandomForestClassifier(max_depth=8, n_jobs=-1, random_state=0)`
-<center><img src="images/rfc-bestMaxDepth.png" width='700'></center>
-
-
-> #### *`rfc_bestMinSamplesLeaf`*
-> `RandomForestClassifier(min_samples_leaf=39, n_jobs=-1, random_state=0)`
-<center><img src="images/rfc-bestMinSamplesLeaf.png" width='700'></center>
-
-> #### *`logreg_best`*
-> `LogisticRegression(C=0.0138643651488824, max_iter=10000, random_state=0, solver='saga')`
-<center><img src="images/logreg-best.png" width='700'></center>
-
-> #### *`knn_best`*
-> `KNeighborsClassifier(n_jobs=-1, n_neighbors=21, p=3)`
-<center><img src="images/knn-best.png" width='700'></center>
-
-
->#### *`bagged_knn_best`*
-> `BaggingClassifier(base_estimator=KNeighborsClassifier(n_jobs=-1, n_neighbors=21, p=3), bootstrap_features=True, max_features=0.5, max_samples=0.75, n_jobs=-1, random_state=0)`
-<center><img src="images/bagged-knn-best.png" width='700'></center>
 
 ### *Feature Importances*
 
@@ -233,26 +207,94 @@ Overall the most important features were:
 > - Diastolic Blood Pressure (`bp_lo`)
 > - Glucose Level (`glucose_normal`, `glucose_very-high`)
 
+### *Validation Against the Test (Hold-Out) Set*
+
+*The validation metrics for predictions against the test (hold-out) set for each model is shown below:*
+
+#### *Randomized Forest (Optimized for `max_depth`)*
+> `RandomForestClassifier(max_depth=8, n_jobs=-1, random_state=0)`
+
+The validation metrics `rfc_bestMaxDepth` indicate that:
+> - *out of all the patients that did not have cardiovascular disease, $82\%$ of them were predicted correctly*
+> - *out of all the patients that did have cardiovascular disease, $65\%$ of them were predicted correctly*
+> - *the model generalizes well to the training data (overfitting has not occured)*
+
+<center><img src="images/rfc-bestMaxDepth.png" width='700'></center>
+
+
+#### *Randomized Forest (Optimized for `min_samples_leaf`)*
+> `RandomForestClassifier(min_samples_leaf=39, n_jobs=-1, random_state=0)`
+
+The validation metrics for `rfc_bestMinSamplesLeaf` indicate that:
+> - *out of all the patients that did not have cardiovascular disease, $80\%$ of them were predicted correctly*
+> - *out of all the patients that did have cardiovascular disease, $67\%$ of them were predicted correctly*
+> - *the model generalizes well to the training data (overfitting has not occured)*
+
+<center><img src="images/rfc-bestMinSamplesLeaf.png" width='700'></center>
+
+#### *Logistic Regression*
+> `LogisticRegression(C=0.0138643651488824, max_iter=10000, random_state=0, solver='saga')`
+
+The validation metrics for `logreg_best` indicate that:
+> - *out of all the patients that did not have cardiovascular disease, $79\%$ of them were predicted correctly*
+> - *out of all the patients that did have cardiovascular disease, $65\%$ of them were predicted correctly*
+> - *the model generalizes well to the training data (overfitting has not occured)*
+
+<center><img src="images/logreg-best.png" width='700'></center>
+
+#### *K-Nearest Neighbors (KNN)*
+> `KNeighborsClassifier(n_jobs=-1, n_neighbors=21, p=3)`
+
+The validation metrics below indicate that:
+> - *out of all the patients that did not have cardiovascular disease, $76\%$ of them were predicted correctly*
+> - *out of all the patients that did have cardiovascular disease, $69\%$ of them were predicted correctly*
+> - *there is a noticeable decrease in all scores when evaluated against the training set (slight overfitting has occured)*
+
+<center><img src="images/knn-best.png" width='700'></center>
+
+
+#### *Bagging Classifier (KNN Base Estimator)*
+> `BaggingClassifier(base_estimator=KNeighborsClassifier(n_jobs=-1, n_neighbors=21, p=3), bootstrap_features=True, max_features=0.5, max_samples=0.75, n_jobs=-1, random_state=0)`
+
+The validation metrics below indicate that:
+> - *out of all the patients that did not have cardiovascular disease, $76\%$ of them were predicted correctly*
+> - *out of all the patients that did have cardiovascular disease, $70\%$ of them were predicted correctly*
+> - *the model generalizes well to the training data (overfitting has not occured)*
+
+<center><img src="images/bagged-knn-best.png" width='700'></center>
+
+### *Summary of Model Performances*
+
+<center><img src="images/all-metrics.png" width='1100'></center>
+
+
 <br>
 
-## Evaluation
+## Conclusion
 
-> *The models with the best scores overall were the `knn_best` and `bagged_knn_best`, however `bagged_knn_best` generalizes slightly better. Therefore, implementing a KNN Classifier with bagged sampling proved to have a slight edge over its competitors.*
+> *The above table table indicates that the Bagging Classifier with a KNN base estimator (`bagged_knn_best`) performed best overall when predicting against the training set, with a score of $0.7$ or higher for all metrics. Most importantly, this model had the highest recall, with a score of $0.706$. Therefore, `bagged_knn_best` will be chosen for further development.*
 
-None of the models shown here, however, meet the requirements for use as an integrated medical screening test. The recall score is too low across all models, which is the most important to maximize in this situation. The models all produced similar validation metrics when making predictions against the test set, indicating more data may need to be collected and features added/removed. All the models discussed here are good candidates for further development because they all generalized well tothe training set.
+Although chosen as the best candidate, `bagged_knn_best` is not ready for use as a screening tool for cardiovascular disease. This is due to the fact that its recall is still unacceptably low, and needs to be improved. That is, its recall score of $0.706$ implies that 3 out of 10 sick patients will be incorrectly classified as healthy. Given the potentially life-threatening consequences of such a misclassification, the rate at which it ocurrs must be reduced (i.e. recall must be increased). In terms of its utility as a screening tool, an accuracy of $0.736$ is also too low, and needs improvement.
+
+> *The following features were determined to be of primary importance when predicting cardiovascular disease, and therefore must be used in future iterations of this model:*
+> - *Systolic Blood Pressure (`bp_hi`)*
+> - *Cholesterol Level (`cholesterol_normal`, `cholesterol_high`, and `cholesterol_very-high`)*
+> - *Age (`age`)*
+> - *Body Mass Index (`bmi`)*
+> - *Diastolic Blood Pressure (`bp_lo`)*
+> - *Glucose Level (`glucose_normal`, `glucose_very-high`)*
+
+With respect to the `cholesterol` and `glucose` features however, effort needs to be made to collect this data as continuous measurements, instead of being crudely classified into 3 levels. Similarly, features like `smoke`, `alcohol`, and `active` are too vague to be useful as predictive variables because of their binary format. If a patient is to answer these questions, they should respond with a quantity instead of a yes/no answer. This would benefit the accuracy of the models and is likely to improve recall.
 
 <br>
 
 ## Limitations & Ideas for Further Analysis
 
-As discussed above, none of the models are ready for use as a screening tool for cardiovascular disease because their recall (and accuracy) scores need to be improved. Theses results are promising though, and effort needs to start shifting towards gathering more data and further training these models. It would be prudent to access the API of awidely-used EHR system and start gathering data that is the same as, and similar to, the features used in this analysis.
+Finding additional features and obtaining more data on which to train the model are both vitally important for improvement. It would be prudent to access the API of awidely-used EHR system and start gathering data that is the same as, and similar to, the features used in this analysis. In conjunction with this, it is highly recommended that a consultant with domain-specific knowledge (i.e. a cardiologist) be brought in to help make sense of features, point out highly correlated features, recommend new features, and aid with feature selection.
 
-It is recommended that a consultant with domain-specific (i.e. a cardiologist) be brought in to help make sense of features, point out highly correlated features, recommend new features, and aid with feature selection. This is vital for model improvement.
+Additionally, combining the models into a single classifier by feeding them into ensemble methods shuch as a Voting Classifier or Stacking Classifier could have improved results.
 
-As seen from the plots showing feature importances, features like `smoke`, `alcohol`, and `active` are too vague to be useful as predictive variables. If a patient is to answer these questions, they should respond with a quantity instead of a yes/no answer. This would benefit the accuracy of the models at the very least.
-
-Finally, combining the different models into a single classifier by feeding them into ensemble methods shuch as a Voting Classifier or Stacking Classifier could have improved results.
-
+Finally, narrowing the scope of the target label to a specific disease (i.e. heart disease or stroke) instead of the entire class of cardiovascular diseases would be highly beneficial, as this would allow us to select features specific to that disease, instead of trying to find features that contribute to cardiovascular disease in general.
 <br>
 
 ## Further Information
