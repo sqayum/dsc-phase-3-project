@@ -265,7 +265,7 @@ The validation metrics below indicate that:
 
 ### *Summary of Model Performances*
 
-<center><img src="images/all-metrics.png" width='1100'></center>
+<center><img src="images/all-metrics.PNG" width='1100'></center>
 
 
 <br>
